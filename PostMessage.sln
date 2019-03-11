@@ -12,11 +12,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisconnectWebSocket", "Disc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnChatMessage", "onChatMessage\src\OnChatMessage\OnChatMessage.csproj", "{B7C59C63-567A-4B9F-BE80-C90F4815031E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aws4RequestSigner", "..\..\..\..\sr\aws-signer-v4-dot-net\Aws4Signer\Aws4RequestSigner.csproj", "{F0D24192-AC33-46FF-9FF7-32A4602743D9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnDBMessageChange", "OnDBMessageChange\src\OnDBMessageChange\OnDBMessageChange.csproj", "{EE8166C3-1B5E-4EF0-ADDC-BDB437CDF3EE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeleteMessage", "DeleteMessage\src\DeleteMessage\DeleteMessage.csproj", "{DC6E3527-A0D5-48CB-9557-DAED3817251C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aws4RequestSigner", "Aws4RequestSigner\src\Aws4RequestSigner\Aws4RequestSigner.csproj", "{BAB37845-A9C0-45C8-9A56-38F8930F29A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,10 +48,6 @@ Global
 		{B7C59C63-567A-4B9F-BE80-C90F4815031E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7C59C63-567A-4B9F-BE80-C90F4815031E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7C59C63-567A-4B9F-BE80-C90F4815031E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F0D24192-AC33-46FF-9FF7-32A4602743D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F0D24192-AC33-46FF-9FF7-32A4602743D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F0D24192-AC33-46FF-9FF7-32A4602743D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F0D24192-AC33-46FF-9FF7-32A4602743D9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EE8166C3-1B5E-4EF0-ADDC-BDB437CDF3EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EE8166C3-1B5E-4EF0-ADDC-BDB437CDF3EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE8166C3-1B5E-4EF0-ADDC-BDB437CDF3EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -60,5 +56,9 @@ Global
 		{DC6E3527-A0D5-48CB-9557-DAED3817251C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC6E3527-A0D5-48CB-9557-DAED3817251C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC6E3527-A0D5-48CB-9557-DAED3817251C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAB37845-A9C0-45C8-9A56-38F8930F29A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAB37845-A9C0-45C8-9A56-38F8930F29A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAB37845-A9C0-45C8-9A56-38F8930F29A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAB37845-A9C0-45C8-9A56-38F8930F29A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

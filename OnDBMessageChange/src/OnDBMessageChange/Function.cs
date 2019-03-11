@@ -10,7 +10,6 @@ using Amazon.Lambda.DynamoDBEvents;
 using Aws4RequestSigner;
 using DataModels;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using JsonSerializer = Amazon.Lambda.Serialization.Json.JsonSerializer;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
