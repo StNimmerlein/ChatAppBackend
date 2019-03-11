@@ -11,42 +11,48 @@ branches:
 env:
   global:
     - PATH=$HOME/.local/bin:$PATH
+    - PROJECTS_TO_DEPLOY="ConnectWebSocket DeleteMessage DisconnectWebSocket GetMessages OnDBMessageChange PostMessage"
 
 before_install:
   - dotnet restore
   - pip install --user awscli
-  - dotnet tool install --global Amazon.Lambda.Tools
+  - dotnet tool install --global Amazon.Lambda.Tools --tool-path lambda
+  - ls .
+  - ls lambda
 
 jobs:
   include:
     - stage: build and deploy
 #    - stage: connect_web_socket
       script:
-        - cd ConnectWebSocket/src/ConnectWebSocket
-        - dotnet lambda deploy-function -fn connectWebSocket -frole testRole
-        - cd ../../..
-#    - stage: delete_message
-#      script:
-        - cd DeleteMessage/src/DeleteMessage
-        - dotnet lambda deploy-function -fn deleteMessage -frole testRole
-        - cd ../../..
-#    - stage: disconnect_web_socket
-#      script:
-        - cd DisconnectWebSocket/src/DisconnectWebSocket
-        - dotnet lambda deploy-function -fn disconnectWebSocket -frole testRole
-        - cd ../../..
-#    - stage: get_messages
-#      script:
-        - cd GetMessages/src/GetMessages
-        - dotnet lambda deploy-function -fn getMessages -frole testRole
-        - cd ../../..
-#    - stage: on_db_message_change
-#      script:
-        - cd OnDBMessageChange/src/OnDBMessageChange
-        - dotnet lambda deploy-function -fn onDbMessageChange -frole testRole
-        - cd ../../..
-#    - stage: post_message
-#      script:
-        - cd PostMessage/src/PostMessage
-        - dotnet lambda deploy-function -fn postMessage -frole testRole
-        - cd ../../..
+        - for i in $PROJECTS_TO_DEPLOY; do cd $i/src/$i; ../../../lambda/lambda package; mv bin/Release/netcoreapp2.1/$i.zip ../../..; cd ../../..; done
+        - aws cloudformation package --s3-bucket app-chat-7-code --output-template-file packaged.yml --template-file template.yml
+        - aws cloudformation deploy --template-file packaged.yml --stack-name lambdas
+#        - cd ConnectWebSocket/src/ConnectWebSocket
+#        - dotnet lambda deploy-function -fn connectWebSocket -frole testRole
+#        - cd ../../..
+##    - stage: delete_message
+##      script:
+#        - cd DeleteMessage/src/DeleteMessage
+#        - dotnet lambda deploy-function -fn deleteMessage -frole testRole
+#        - cd ../../..
+##    - stage: disconnect_web_socket
+##      script:
+#        - cd DisconnectWebSocket/src/DisconnectWebSocket
+#        - dotnet lambda deploy-function -fn disconnectWebSocket -frole testRole
+#        - cd ../../..
+##    - stage: get_messages
+##      script:
+#        - cd GetMessages/src/GetMessages
+#        - dotnet lambda deploy-function -fn getMessages -frole testRole
+#        - cd ../../..
+##    - stage: on_db_message_change
+##      script:
+#        - cd OnDBMessageChange/src/OnDBMessageChange
+#        - dotnet lambda deploy-function -fn onDbMessageChange -frole testRole
+#        - cd ../../..
+##    - stage: post_message
+##      script:
+#        - cd PostMessage/src/PostMessage
+#        - dotnet lambda deploy-function -fn postMessage -frole testRole
+#        - cd ../../..

@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Do everything
+Resources:
+  PostMessageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: dotnetcore2.1
+      Handler: PostMessage::PostMessage.Function::FunctionHandler
+      Code: PostMessage.zip
+      Timeout: 15
+      MemorySize: 256
+      Role: arn:aws:iam::179261888537:role/service-role/testRole
