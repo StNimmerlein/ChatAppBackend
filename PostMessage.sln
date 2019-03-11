@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnDBMessageChange", "OnDBMe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeleteMessage", "DeleteMessage\src\DeleteMessage\DeleteMessage.csproj", "{DC6E3527-A0D5-48CB-9557-DAED3817251C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aws4RequestSigner", "Aws4RequestSigner\src\Aws4RequestSigner\Aws4RequestSigner.csproj", "{BAB37845-A9C0-45C8-9A56-38F8930F29A5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aws4RequestSigner", "Aws4RequestSigner\src\Aws4RequestSigner\Aws4RequestSigner.csproj", "{DACB5172-852F-45C1-B291-995BBAB4C8FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,9 +56,9 @@ Global
 		{DC6E3527-A0D5-48CB-9557-DAED3817251C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC6E3527-A0D5-48CB-9557-DAED3817251C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC6E3527-A0D5-48CB-9557-DAED3817251C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BAB37845-A9C0-45C8-9A56-38F8930F29A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BAB37845-A9C0-45C8-9A56-38F8930F29A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BAB37845-A9C0-45C8-9A56-38F8930F29A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BAB37845-A9C0-45C8-9A56-38F8930F29A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DACB5172-852F-45C1-B291-995BBAB4C8FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DACB5172-852F-45C1-B291-995BBAB4C8FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DACB5172-852F-45C1-B291-995BBAB4C8FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DACB5172-852F-45C1-B291-995BBAB4C8FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

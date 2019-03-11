@@ -11,7 +11,7 @@
         <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.17.10" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\..\..\..\..\..\sr\aws-signer-v4-dot-net\Aws4Signer\Aws4RequestSigner.csproj" />
+      <ProjectReference Include="..\..\..\Aws4RequestSigner\src\Aws4RequestSigner\Aws4RequestSigner.csproj" />
       <ProjectReference Include="..\..\..\DataModels\DataModels.csproj" />
     </ItemGroup>
 </Project>
