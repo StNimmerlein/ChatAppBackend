@@ -16,7 +16,7 @@ env:
 before_install:
   - dotnet restore
   - pip install --user awscli
-  - dotnet tool install --global Amazon.Lambda.Tools --tool-path lambda
+  - dotnet tool install Amazon.Lambda.Tools --tool-path lambda
   - ls .
   - ls lambda
 
@@ -25,7 +25,7 @@ jobs:
     - stage: build and deploy
 #    - stage: connect_web_socket
       script:
-        - for i in $PROJECTS_TO_DEPLOY; do cd $i/src/$i; ../../../lambda/lambda package; mv bin/Release/netcoreapp2.1/$i.zip ../../..; cd ../../..; done
+        - for i in $PROJECTS_TO_DEPLOY; do cd $i/src/$i; ../../../lambda/dotnet-lambda package; mv bin/Release/netcoreapp2.1/$i.zip ../../..; cd ../../..; done
         - aws cloudformation package --s3-bucket app-chat-7-code --output-template-file packaged.yml --template-file template.yml
         - aws cloudformation deploy --template-file packaged.yml --stack-name lambdas
 #        - cd ConnectWebSocket/src/ConnectWebSocket
