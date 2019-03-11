@@ -58,8 +58,8 @@ Resources:
       Role: arn:aws:iam::179261888537:role/service-role/testRole
       Environment:
         Variables:
-          - ACCESS_KEY: !Ref AccessKey
-          - SECRET_KEY: !Ref SecretKey
+          ACCESS_KEY: !Ref AccessKey
+          SECRET_KEY: !Ref SecretKey
   PostMessageFunction:
     Type: AWS::Lambda::Function
     Properties:
