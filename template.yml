@@ -1,7 +1,65 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
   Do everything
+  
+Parameters:
+  AccessKey:
+    Type: String
+    Description: Access Key with CLI permission
+  SecretKey:
+    Type: String
+    Description: Matching Secret Key
+  
 Resources:
+  ConnectWebSocketFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: dotnetcore2.1
+      Handler: ConnectWebSocket::ConnectWebSocket.Function::FunctionHandler
+      Code: PostMessage.zip
+      Timeout: 15
+      MemorySize: 128
+      Role: arn:aws:iam::179261888537:role/service-role/testRole
+  DeleteMessageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: dotnetcore2.1
+      Handler: DeleteMessage::DeleteMessage.Function::FunctionHandler
+      Code: PostMessage.zip
+      Timeout: 15
+      MemorySize: 128
+      Role: arn:aws:iam::179261888537:role/service-role/testRole
+  DisconnectWebSocketFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: dotnetcore2.1
+      Handler: DisconnectWebSocket::DisconnectWebSocket.Function::FunctionHandler
+      Code: PostMessage.zip
+      Timeout: 15
+      MemorySize: 128
+      Role: arn:aws:iam::179261888537:role/service-role/testRole
+  GetMessagesFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: dotnetcore2.1
+      Handler: GetMessages::GetMessages.Function::FunctionHandler
+      Code: PostMessage.zip
+      Timeout: 15
+      MemorySize: 256
+      Role: arn:aws:iam::179261888537:role/service-role/testRole
+  OnDBMessageChangeFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: dotnetcore2.1
+      Handler: OnDBMessageChange::OnDBMessageChange.Function::FunctionHandler
+      Code: PostMessage.zip
+      Timeout: 15
+      MemorySize: 256
+      Role: arn:aws:iam::179261888537:role/service-role/testRole
+      Environment:
+        Variables:
+          - ACCESS_KEY: !Ref AccessKey
+          - SECRET_KEY: !Ref SecretKey
   PostMessageFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -9,5 +67,5 @@ Resources:
       Handler: PostMessage::PostMessage.Function::FunctionHandler
       Code: PostMessage.zip
       Timeout: 15
-      MemorySize: 256
+      MemorySize: 128
       Role: arn:aws:iam::179261888537:role/service-role/testRole

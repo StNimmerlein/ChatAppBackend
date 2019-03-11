@@ -19,8 +19,9 @@ namespace OnDBMessageChange
 {
     public class Function
     {
-        private readonly AWS4RequestSigner signer =
-            new AWS4RequestSigner("AKIAIWVRP4F46YZWCGSQ", "DfuxziqlQYGRHaSXKY9VJ2s5M7YEaLqC07MB19G7");
+        private readonly string ACCESS_KEY = Environment.GetEnvironmentVariable("ACCESS_KEY");
+        private readonly string SECRET_KEY = Environment.GetEnvironmentVariable("SECRET_KEY");
+        private readonly AWS4RequestSigner signer;
 
         private readonly HttpClient httpClient = new HttpClient();
         private readonly Table table;
@@ -29,6 +30,7 @@ namespace OnDBMessageChange
 
         public Function()
         {
+            signer = new AWS4RequestSigner(ACCESS_KEY, SECRET_KEY);
             var config = new AmazonDynamoDBConfig {RegionEndpoint = RegionEndpoint.EUWest1};
             var client = new AmazonDynamoDBClient(config);
             table = Table.LoadTable(client, "ConnectionIds");
@@ -58,7 +60,7 @@ namespace OnDBMessageChange
                 {
                     Author = newImage.ContainsKey("Author") ? newImage["Author"].S : "",
                     Id = int.Parse(newImage["Id"].N),
-                    Text = newImage.ContainsKey("Text") ?  newImage["Text"].S : "",
+                    Text = newImage.ContainsKey("Text") ? newImage["Text"].S : "",
                     Time = DateTime.Parse(newImage["Time"].S)
                 };
             }

@@ -38,7 +38,8 @@ namespace OnChatMessage
 
             var httpClient = new HttpClient();
 
-            var signer = new AWS4RequestSigner("AKIAIWVRP4F46YZWCGSQ", "DfuxziqlQYGRHaSXKY9VJ2s5M7YEaLqC07MB19G7");
+            // Function no longer in use, therefore no up-to-date keys
+            var signer = new AWS4RequestSigner("AccessKey", "SecretKey");
             foreach (var doc in remaining)
             {
                 var connectionId = doc["ConnectionId"];
