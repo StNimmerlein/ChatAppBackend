@@ -7,6 +7,9 @@ branches:
   only:
     - master
     
+before_install:
+  - dotnet restore
+
 jobs:
   include:
     - stage: post_message
