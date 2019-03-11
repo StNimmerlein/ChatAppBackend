@@ -16,7 +16,7 @@ Resources:
     Properties:
       Runtime: dotnetcore2.1
       Handler: ConnectWebSocket::ConnectWebSocket.Function::FunctionHandler
-      Code: PostMessage.zip
+      Code: ConnectWebSocket.zip
       Timeout: 15
       MemorySize: 128
       Role: arn:aws:iam::179261888537:role/service-role/testRole
@@ -25,7 +25,7 @@ Resources:
     Properties:
       Runtime: dotnetcore2.1
       Handler: DeleteMessage::DeleteMessage.Function::FunctionHandler
-      Code: PostMessage.zip
+      Code: DeleteMessage.zip
       Timeout: 15
       MemorySize: 128
       Role: arn:aws:iam::179261888537:role/service-role/testRole
@@ -34,7 +34,7 @@ Resources:
     Properties:
       Runtime: dotnetcore2.1
       Handler: DisconnectWebSocket::DisconnectWebSocket.Function::FunctionHandler
-      Code: PostMessage.zip
+      Code: DisconnectWebSocket.zip
       Timeout: 15
       MemorySize: 128
       Role: arn:aws:iam::179261888537:role/service-role/testRole
@@ -43,7 +43,7 @@ Resources:
     Properties:
       Runtime: dotnetcore2.1
       Handler: GetMessages::GetMessages.Function::FunctionHandler
-      Code: PostMessage.zip
+      Code: GetMessages.zip
       Timeout: 15
       MemorySize: 256
       Role: arn:aws:iam::179261888537:role/service-role/testRole
@@ -52,7 +52,7 @@ Resources:
     Properties:
       Runtime: dotnetcore2.1
       Handler: OnDBMessageChange::OnDBMessageChange.Function::FunctionHandler
-      Code: PostMessage.zip
+      Code: OnDBMessageChange.zip
       Timeout: 15
       MemorySize: 256
       Role: arn:aws:iam::179261888537:role/service-role/testRole
