@@ -1,6 +1,6 @@
-language: dotnet
-dotnet:
-  - 2.1.300
+language: csharp
+mono: none
+dotnet: 2.2.104
 dist: trusty
     
 branches:
