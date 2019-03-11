@@ -1,0 +1,15 @@
+language: dotnet
+dotnet:
+  - 2.1.300
+dist: trusty
+    
+branches:
+  only:
+    - master
+    
+jobs:
+  include:
+    - stage: post_message
+      script:
+        - cd PostMessage/src/PostMessage
+        - dotnet build
