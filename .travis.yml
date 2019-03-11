@@ -15,30 +15,38 @@ env:
 before_install:
   - dotnet restore
   - pip install --user awscli
+  - dotnet tool install --global Amazon.Lambda.Tools
 
 jobs:
   include:
-    - stage: connect_web_socket
+    - stage: build and deploy
+#    - stage: connect_web_socket
       script:
         - cd ConnectWebSocket/src/ConnectWebSocket
         - dotnet lambda deploy-function -fn connectWebSocket -frole testRole
-    - stage: delete_message
-      script:
+        - cd ../../..
+#    - stage: delete_message
+#      script:
         - cd DeleteMessage/src/DeleteMessage
         - dotnet lambda deploy-function -fn deleteMessage -frole testRole
-    - stage: disconnect_web_socket
-      script:
+        - cd ../../..
+#    - stage: disconnect_web_socket
+#      script:
         - cd DisconnectWebSocket/src/DisconnectWebSocket
         - dotnet lambda deploy-function -fn disconnectWebSocket -frole testRole
-    - stage: get_messages
-      script:
+        - cd ../../..
+#    - stage: get_messages
+#      script:
         - cd GetMessages/src/GetMessages
         - dotnet lambda deploy-function -fn getMessages -frole testRole
-    - stage: on_db_message_change
-      script:
+        - cd ../../..
+#    - stage: on_db_message_change
+#      script:
         - cd OnDBMessageChange/src/OnDBMessageChange
         - dotnet lambda deploy-function -fn onDbMessageChange -frole testRole
-    - stage: post_message
-      script:
+        - cd ../../..
+#    - stage: post_message
+#      script:
         - cd PostMessage/src/PostMessage
         - dotnet lambda deploy-function -fn postMessage -frole testRole
+        - cd ../../..
