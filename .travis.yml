@@ -24,7 +24,9 @@ jobs:
 #    - stage: connect_web_socket
       script:
         - for i in $PROJECTS_TO_DEPLOY; do cd $i/src/$i; ../../../lambda/dotnet-lambda package; mv bin/Release/netcoreapp2.1/$i.zip ../../..; cd ../../..; done
-        - aws cloudformation package --s3-bucket app-chat-7-code --output-template-file packaged.yml --template-file template.yml
+        - timestamp=$(date +%Y%m%d%H%M%S)
+        - cat template.yml | sed "s/\$timestamp/$timestamp/g" > modified.yml
+        - aws cloudformation package --s3-bucket app-chat-7-code --output-template-file packaged.yml --template-file modified.yml
         - aws cloudformation deploy --template-file packaged.yml --stack-name lambdas --parameter-overrides AccessKey=$AWS_ACCESS_KEY_ID SecretKey=$AWS_SECRET_ACCESS_KEY
 #        - cd ConnectWebSocket/src/ConnectWebSocket
 #        - dotnet lambda deploy-function -fn connectWebSocket -frole testRole

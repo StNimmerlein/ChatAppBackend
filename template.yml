@@ -9,35 +9,112 @@ Parameters:
   SecretKey:
     Type: String
     Description: Matching Secret Key
+  ConnectionIdTableName:
+    Type: String
+    Description: Table name with web socket connection ids
+    Default: ChatConnectionIds
+  MessagesTableName:
+    Type: String
+    Description: Table name with messages
+    Default: ChatMessages
   
 Resources:
-  ConnectWebSocketFunction:
-    Type: AWS::Lambda::Function
+  
+  ######################
+  ### RestApiGateway ###
+  ######################
+  RestApiGateway:
+    Type: AWS::ApiGateway::RestApi
     Properties:
-      Runtime: dotnetcore2.1
-      Handler: ConnectWebSocket::ConnectWebSocket.Function::FunctionHandler
-      Code: ConnectWebSocket.zip
-      Timeout: 15
-      MemorySize: 128
-      Role: arn:aws:iam::179261888537:role/service-role/testRole
-  DeleteMessageFunction:
-    Type: AWS::Lambda::Function
+      Name: Chat Rest Api
+      Description: The Rest Api that is used to get, post and delete messages,
+      FailOnWarnings: true
+      
+  RestApiStage:
+    Type: AWS::ApiGateway::Stage
     Properties:
-      Runtime: dotnetcore2.1
-      Handler: DeleteMessage::DeleteMessage.Function::FunctionHandler
-      Code: DeleteMessage.zip
-      Timeout: 15
-      MemorySize: 128
-      Role: arn:aws:iam::179261888537:role/service-role/testRole
-  DisconnectWebSocketFunction:
-    Type: AWS::Lambda::Function
+      RestApiId: !Ref RestApiGateway
+      DeploymentId: !Ref RestApiDeployment$timestamp
+      StageName: v1
+      
+  RestApiDeployment$timestamp:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - GetMethod
+      - PostMethod
+      - DeleteMethod
     Properties:
-      Runtime: dotnetcore2.1
-      Handler: DisconnectWebSocket::DisconnectWebSocket.Function::FunctionHandler
-      Code: DisconnectWebSocket.zip
-      Timeout: 15
-      MemorySize: 128
-      Role: arn:aws:iam::179261888537:role/service-role/testRole
+      RestApiId: !Ref RestApiGateway
+  
+  MessagesResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      ParentId: !GetAtt RestApiGateway.RootResourceId
+      PathPart: message
+      
+  OptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId: !Ref RestApiGateway
+      ResourceId: !Ref MessagesResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS,GET,DELETE'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: "{\"statusCode\": 200}"
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+  
+  ####################
+  ### Get Messages ###
+  ####################
+  GetMethod:
+    DependsOn: GetPermission
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId: !Ref RestApiGateway
+      ResourceId: !Ref MessagesResource
+      HttpMethod: GET
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: "{\"startingAfter\": \"$input.params('startingAfter')\"}"
+        Type: AWS
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetMessagesFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Origin: true
+
   GetMessagesFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -47,6 +124,268 @@ Resources:
       Timeout: 15
       MemorySize: 256
       Role: arn:aws:iam::179261888537:role/service-role/testRole
+      Environment:
+        Variables:
+          MESSAGES_TABLE: !Ref MessagesTableName
+      
+  GetPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !GetAtt GetMessagesFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/*"
+      
+  ####################
+  ### Post Message ###
+  ####################
+  PostMethod:
+    DependsOn: PostPermission
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId: !Ref RestApiGateway
+      ResourceId: !Ref MessagesResource
+      HttpMethod: POST
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        PassthroughBehavior: WHEN_NO_MATCH
+        Type: AWS
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostMessageFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Origin: true
+              
+  PostMessageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: dotnetcore2.1
+      Handler: PostMessage::PostMessage.Function::FunctionHandler
+      Code: PostMessage.zip
+      Timeout: 15
+      MemorySize: 128
+      Role: arn:aws:iam::179261888537:role/service-role/testRole
+      Environment:
+        Variables:
+          MESSAGES_TABLE: !Ref MessagesTableName
+      
+  PostPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !GetAtt PostMessageFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/*"
+      
+  ######################
+  ### Delete Message ###
+  ######################
+  DeleteMethod:
+    DependsOn: DeletePermission
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId: !Ref RestApiGateway
+      ResourceId: !Ref MessagesResource
+      HttpMethod: DELETE
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: "{\"id\": \"$input.params('id')\",\"time\": \"$input.params('time')\"}"
+        Type: AWS
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteMessageFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Origin: true
+            
+  DeleteMessageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: dotnetcore2.1
+      Handler: DeleteMessage::DeleteMessage.Function::FunctionHandler
+      Code: DeleteMessage.zip
+      Timeout: 15
+      MemorySize: 128
+      Role: arn:aws:iam::179261888537:role/service-role/testRole
+      Environment:
+        Variables:
+          MESSAGES_TABLE: !Ref MessagesTableName
+      
+  DeletePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !GetAtt DeleteMessageFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/*"
+
+  ###########################
+  ### WebSocketApiGateway ###
+  ###########################
+  WebSocketApiGateway:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: Chat WebSocket Api Gateway
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: '$request.body.action'
+      
+  WebSocketStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref WebSocketApiGateway
+      DeploymentId: !Ref WebSocketDeployment$timestamp
+      StageName: v1
+  
+  WebSocketDeployment$timestamp:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ConnectRoute
+      - DisconnectRoute
+    Properties:
+      ApiId: !Ref WebSocketApiGateway
+        
+  ###############
+  ### Connect ###
+  ###############
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      AuthorizationType: NONE
+      ApiId: !Ref WebSocketApiGateway
+      RouteKey: '$connect'
+      Target: !Sub 'integrations/${ConnectIntegration}'
+  
+  ConnectIntegration:
+    DependsOn: ConnectPermission
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApiGateway
+      IntegrationType: AWS_PROXY
+      IntegrationMethod: POST
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ConnectWebSocketFunction.Arn}/invocations"
+      
+  ConnectWebSocketFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: dotnetcore2.1
+      Handler: ConnectWebSocket::ConnectWebSocket.Function::FunctionHandler
+      Code: ConnectWebSocket.zip
+      Timeout: 15
+      MemorySize: 128
+      Role: arn:aws:iam::179261888537:role/service-role/testRole
+      Environment:
+        Variables:
+          CONNECTION_ID_TABLE: !Ref ConnectionIdTableName
+
+  ConnectPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !GetAtt ConnectWebSocketFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApiGateway}/*"
+      
+
+  ##################
+  ### Disconnect ###
+  ##################
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      AuthorizationType: NONE
+      ApiId: !Ref WebSocketApiGateway
+      RouteKey: '$disconnect'
+      Target: !Sub 'integrations/${DisconnectIntegration}'
+
+  DisconnectIntegration:
+    DependsOn: DisconnectPermission
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApiGateway
+      IntegrationType: AWS_PROXY
+      IntegrationMethod: POST
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DisconnectWebSocketFunction.Arn}/invocations"
+
+  DisconnectWebSocketFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: dotnetcore2.1
+      Handler: DisconnectWebSocket::DisconnectWebSocket.Function::FunctionHandler
+      Code: DisconnectWebSocket.zip
+      Timeout: 15
+      MemorySize: 128
+      Role: arn:aws:iam::179261888537:role/service-role/testRole
+      Environment:
+        Variables:
+          CONNECTION_ID_TABLE: !Ref ConnectionIdTableName
+
+  DisconnectPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:invokeFunction
+      FunctionName: !GetAtt DisconnectWebSocketFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApiGateway}/*"
+
+  ################
+  ### Database ###
+  ################
+  ConnectionIdsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref ConnectionIdTableName
+      KeySchema: 
+        - AttributeName: ConnectionId
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: ConnectionId
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      
+  MessagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref MessagesTableName
+      KeySchema:
+        - AttributeName: Id
+          KeyType: HASH
+        - AttributeName: Time
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: Id
+          AttributeType: N
+        - AttributeName: Time
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+  
+  ###############
+  ### DBEvent ###
+  ###############
   OnDBMessageChangeFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -60,12 +399,12 @@ Resources:
         Variables:
           ACCESS_KEY: !Ref AccessKey
           SECRET_KEY: !Ref SecretKey
-  PostMessageFunction:
-    Type: AWS::Lambda::Function
+          CONNECTION_ID_TABLE: !Ref ConnectionIdTableName
+          WEB_SOCKET_URL: !Sub "${WebSocketApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${WebSocketStage}"
+
+  DbStreamLambdaMapping:
+    Type: AWS::Lambda::EventSourceMapping
     Properties:
-      Runtime: dotnetcore2.1
-      Handler: PostMessage::PostMessage.Function::FunctionHandler
-      Code: PostMessage.zip
-      Timeout: 15
-      MemorySize: 128
-      Role: arn:aws:iam::179261888537:role/service-role/testRole
+      FunctionName: !GetAtt OnDBMessageChangeFunction.Arn
+      EventSourceArn: !GetAtt MessagesTable.StreamArn
+      StartingPosition: LATEST

@@ -21,19 +21,18 @@ namespace OnDBMessageChange
     {
         private readonly string ACCESS_KEY = Environment.GetEnvironmentVariable("ACCESS_KEY");
         private readonly string SECRET_KEY = Environment.GetEnvironmentVariable("SECRET_KEY");
+        private readonly string WEB_SOCKET_URL = Environment.GetEnvironmentVariable("WEB_SOCKET_URL");
         private readonly AWS4RequestSigner signer;
 
         private readonly HttpClient httpClient = new HttpClient();
         private readonly Table table;
-        private readonly string domainName = "ox4jvebud5.execute-api.eu-west-1.amazonaws.com";
-        private readonly string stageName = "test";
 
         public Function()
         {
             signer = new AWS4RequestSigner(ACCESS_KEY, SECRET_KEY);
             var config = new AmazonDynamoDBConfig {RegionEndpoint = RegionEndpoint.EUWest1};
             var client = new AmazonDynamoDBClient(config);
-            table = Table.LoadTable(client, "ConnectionIds");
+            table = Table.LoadTable(client, Environment.GetEnvironmentVariable("CONNECTION_ID_TABLE"));
         }
 
         public Object FunctionHandler(DynamoDBEvent input, ILambdaContext context)
@@ -108,7 +107,7 @@ namespace OnDBMessageChange
                 var connectionId = doc["ConnectionId"];
                 Console.WriteLine($"Current id: {connectionId}");
                 var endpoint =
-                    $"https://{domainName}/{stageName}/@connections/{connectionId}";
+                    $"https://{WEB_SOCKET_URL}/@connections/{connectionId}";
 
                 var request = new HttpRequestMessage
                 {

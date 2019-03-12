@@ -28,7 +28,7 @@ namespace ConnectWebSocket
 
         public async Task<HttpResponse> FunctionHandler(APIGatewayProxyRequest input, ILambdaContext context)
         {
-            var table = Table.LoadTable(client, "ConnectionIds");
+            var table = Table.LoadTable(client, Environment.GetEnvironmentVariable("CONNECTION_ID_TABLE"));
             var id = new Document {["ConnectionId"] = input.RequestContext.ConnectionId};
             await table.PutItemAsync(id);
             return new HttpResponse

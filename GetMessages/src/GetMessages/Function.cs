@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,7 +31,10 @@ namespace GetMessages
             var scanConditions = new List<ScanCondition>();
             scanConditions.Add(new ScanCondition("Time", ScanOperator.GreaterThan, query.StartingAfter));
 
-            var asyncSearch = dbContext.ScanAsync<MessageDbDto>(scanConditions);
+            var asyncSearch = dbContext.ScanAsync<MessageDbDto>(scanConditions, new DynamoDBOperationConfig
+            {
+                OverrideTableName = Environment.GetEnvironmentVariable("MESSAGES_TABLE")
+            });
             var messages = await asyncSearch.GetRemainingAsync();
             return messages.Select(message => message.ToOutput()).OrderBy(message => message.Time).ToList();
         }

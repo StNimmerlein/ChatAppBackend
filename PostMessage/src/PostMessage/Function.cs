@@ -26,7 +26,10 @@ namespace PostMessage
         {
             try
             {
-                await dbContext.SaveAsync(new MessageDbDto(messageInput));
+                await dbContext.SaveAsync(new MessageDbDto(messageInput), new DynamoDBOperationConfig
+                {
+                    OverrideTableName = Environment.GetEnvironmentVariable("MESSAGES_TABLE")
+                });
                 return "success";
             }
             catch (Exception e)

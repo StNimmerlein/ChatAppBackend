@@ -34,7 +34,10 @@ namespace DeleteMessage
                 Id = key.Id,
                 Time = key.Time
             };
-            await dbContext.DeleteAsync(message);
+            await dbContext.DeleteAsync(message, new DynamoDBOperationConfig
+            {
+                OverrideTableName = Environment.GetEnvironmentVariable("MESSAGES_TABLE")
+            });
             return new HttpResponse
             {
                 statusCode = HttpStatusCode.OK
