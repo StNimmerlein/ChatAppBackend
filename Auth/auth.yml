@@ -135,7 +135,7 @@ Resources:
   CloudFormationSendResponse:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: !Sub "${AWS::StackName}:CloudFormationSendResponse"
+      FunctionName: CloudFormationSendResponse
       Runtime: nodejs8.10
       Code: ./CloudFormationSendResponse
       Handler: index.handler
@@ -143,7 +143,7 @@ Resources:
   CloudFormationCognitoUserPoolClientSettings:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: !Sub "${AWS::StackName}:CloudFormationCognitoUserPoolClientSettings"
+      FunctionName: CloudFormationCognitoUserPoolClientSettings
       Runtime: nodejs8.10
       Code: ./CloudFormationCognitoUserPoolClientSettings.js
       Handler: CloudFormationCognitoUserPoolClientSettings.handler
@@ -152,7 +152,7 @@ Resources:
   CloudFormationCognitoUserPoolDomain:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: !Sub "${AWS::StackName}:CloudFormationCognitoUserPoolDomain"
+      FunctionName: CloudFormationCognitoUserPoolDomain
       Runtime: nodejs8.10
       Code: ./CloudFormationCognitoUserPoolDomain.js
       Handler: CloudFormationCognitoUserPoolDomain.handler
