@@ -416,10 +416,10 @@ Resources:
       
 Outputs:
   ApiGatewayOutput:
-    Value: !Ref RestApiDeployment$timestamp
+    Value: !Sub "https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${RestApiStage}"
     Export:
       Name: !Sub "${AWS::StackName}:RestApiUrl"
   WebSocketOutput:
-    Value: !Ref WebSocketDeployment$timestamp
+    Value: !Sub "wss://${WebSocketApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${WebSocketStage}"
     Export:
       Name: !Sub "${AWS::StackName}:WebSocketApiUrl"
