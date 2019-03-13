@@ -21,38 +21,15 @@ before_install:
 jobs:
   include:
     - stage: build and deploy
-#    - stage: connect_web_socket
       script:
+        - if [ "$STACK" == "" ]; then echo "You must provide a stack name as environment variable STACK."; exit 1; fi
+        - if [ "$AUTH_STACK" == "" ]; then echo "You must provide an auth stack name as environment variable AUTH_STACK."; exit 1; fi
+        - if [ "$BUCKET" == "" ]; then echo "You must provide a code bucket as environment variable BUCKET."; exit 1; fi
         - for i in $PROJECTS_TO_DEPLOY; do cd $i/src/$i; ../../../lambda/dotnet-lambda package; mv bin/Release/netcoreapp2.1/$i.zip ../../..; cd ../../..; done
         - timestamp=$(date +%Y%m%d%H%M%S)
         - cat template.yml | sed "s/\$timestamp/$timestamp/g" > modified.yml
-        - aws cloudformation package --s3-bucket app-chat-7-code --output-template-file packaged.yml --template-file modified.yml
-        - aws cloudformation deploy --template-file packaged.yml --stack-name lambdas --parameter-overrides AccessKey=$AWS_ACCESS_KEY_ID SecretKey=$AWS_SECRET_ACCESS_KEY
-#        - cd ConnectWebSocket/src/ConnectWebSocket
-#        - dotnet lambda deploy-function -fn connectWebSocket -frole testRole
-#        - cd ../../..
-##    - stage: delete_message
-##      script:
-#        - cd DeleteMessage/src/DeleteMessage
-#        - dotnet lambda deploy-function -fn deleteMessage -frole testRole
-#        - cd ../../..
-##    - stage: disconnect_web_socket
-##      script:
-#        - cd DisconnectWebSocket/src/DisconnectWebSocket
-#        - dotnet lambda deploy-function -fn disconnectWebSocket -frole testRole
-#        - cd ../../..
-##    - stage: get_messages
-##      script:
-#        - cd GetMessages/src/GetMessages
-#        - dotnet lambda deploy-function -fn getMessages -frole testRole
-#        - cd ../../..
-##    - stage: on_db_message_change
-##      script:
-#        - cd OnDBMessageChange/src/OnDBMessageChange
-#        - dotnet lambda deploy-function -fn onDbMessageChange -frole testRole
-#        - cd ../../..
-##    - stage: post_message
-##      script:
-#        - cd PostMessage/src/PostMessage
-#        - dotnet lambda deploy-function -fn postMessage -frole testRole
-#        - cd ../../..
+        - aws cloudformation package --s3-bucket $BUCKET --output-template-file packaged.yml --template-file modified.yml
+        - aws cloudformation deploy --template-file packaged.yml --stack-name $STACK --parameter-overrides AccessKey=$AWS_ACCESS_KEY_ID SecretKey=$AWS_SECRET_ACCESS_KEY
+        - cd Auth
+        - aws cloudformation package --template-file auth.yml --s3-bucket $BUCKET --output-template-file packaged.yml
+        - aws cloudformation deploy --template-file packaged.yml --stack-name $AUTH_STACK --parameter-overrides UserPoolName=ChatUserPool UserPoolDomainName=$AUTH_DOMAIN --capabilities CAPABILITY_NAMED_IAM

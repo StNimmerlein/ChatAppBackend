@@ -17,6 +17,10 @@ Parameters:
     Type: String
     Description: Table name with messages
     Default: ChatMessages
+  UserPoolName:
+    Type: String
+    Description: The name of the cognito user pool
+    Default: ChatUsers
   
 Resources:
   
@@ -408,3 +412,14 @@ Resources:
       FunctionName: !GetAtt OnDBMessageChangeFunction.Arn
       EventSourceArn: !GetAtt MessagesTable.StreamArn
       StartingPosition: LATEST
+      
+      
+Outputs:
+  ApiGatewayOutput:
+    Value: !Ref RestApiDeployment$timestamp
+    Export:
+      Name: !Sub "${AWS::StackName}:RestApiUrl"
+  WebSocketOutput:
+    Value: !Ref WebSocketDeployment$timestamp
+    Export:
+      Name: !Sub "${AWS::StackName}:WebSocketApiUrl"
