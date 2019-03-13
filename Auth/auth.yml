@@ -1,0 +1,181 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  UserPoolName:
+    Type: String
+    Description: The name of the cognito user pool
+  UserPoolDomainName:
+    Type: String
+    Description: The domain associated to the user pool
+  RedirectUrl:
+    Type: String
+    Description: Redirect and callback URL for auth
+    
+Resources:
+  UserPool:
+    Type: 'AWS::Cognito::UserPool'
+    Properties:
+      UserPoolName: !Ref UserPoolName
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: name
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+        - Name: email
+          AttributeDataType: String
+          Mutable: false
+          Required: true
+      AliasAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 6
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+          RequireUppercase: false
+      
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: ChatClient
+      GenerateSecret: false
+      UserPoolId: !Ref UserPool
+  
+  UserPoolClientSettings:
+    Type: Custom::CognitoUserPoolClientSettings
+    Properties:
+      ServiceToken: !GetAtt CloudFormationCognitoUserPoolClientSettings.Arn
+      UserPoolId: !Ref UserPool
+      UserPoolClientId: !Ref UserPoolClient
+      SupportedIdentityProviders:
+        - COGNITO
+#        TODO
+#        - GOOGLE
+      CallbackURL: !Ref RedirectUrl
+      LogoutURL: !Ref RedirectUrl
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+  
+  UserPoolDomain:
+    Type: Custom::CognitoUserPoolDomain
+    Properties:
+      ServiceToken: !GetAtt CloudFormationCognitoUserPoolDomain.Arn
+      UserPoolId: !Ref UserPool
+      Domain: !Ref UserPoolDomainName
+      
+  #####################################################################################################
+  ### Stuff from repo (see https://github.com/rosberglinhares/CloudFormationCognitoCustomResources) ###
+  #####################################################################################################
+  LambdaForCloudFormation:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: LambdaForCloudFormation
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: Allow
+            Action: 'sts:AssumeRole'
+            Principal:
+              Service: lambda.amazonaws.com
+      Policies:
+        -
+          PolicyName: WriteCloudWatchLogs
+          PolicyDocument: 
+            Version: '2012-10-17'
+            Statement: 
+              -
+                Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+        -
+          PolicyName: UpdateUserPoolClient
+          PolicyDocument: 
+            Version: '2012-10-17'
+            Statement: 
+              -
+                Effect: Allow
+                Action: 'cognito-idp:UpdateUserPoolClient'
+                Resource: 'arn:aws:cognito-idp:*:*:userpool/*'
+        -
+          PolicyName: ManageUserPoolDomain
+          PolicyDocument: 
+            Version: '2012-10-17'
+            Statement: 
+              -
+                Effect: Allow
+                Action: 'cognito-idp:CreateUserPoolDomain'
+                Resource: 'arn:aws:cognito-idp:*:*:userpool/*'
+              -
+                Effect: Allow
+                Action: 'cognito-idp:DeleteUserPoolDomain'
+                Resource: 'arn:aws:cognito-idp:*:*:userpool/*'
+              -
+                Effect: Allow
+                Action: 'cognito-idp:DescribeUserPoolDomain'
+                Resource: '*'
+        -
+          PolicyName: InvokeLambdaFunction
+          PolicyDocument: 
+            Version: '2012-10-17'
+            Statement: 
+              -
+                Effect: Allow
+                Action: 'lambda:InvokeFunction'
+                Resource: 'arn:aws:lambda:*:*:function:*'
+  CloudFormationSendResponse:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: CloudFormationSendResponse
+      Runtime: nodejs8.10
+      Code: ./CloudFormationSendResponse
+      Handler: index.handler
+      Role: !GetAtt LambdaForCloudFormation.Arn
+  CloudFormationCognitoUserPoolClientSettings:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: CloudFormationCognitoUserPoolClientSettings
+      Runtime: nodejs8.10
+      Code: ./CloudFormationCognitoUserPoolClientSettings.js
+      Handler: CloudFormationCognitoUserPoolClientSettings.handler
+      Role: !GetAtt LambdaForCloudFormation.Arn
+    DependsOn: CloudFormationSendResponse
+  CloudFormationCognitoUserPoolDomain:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: CloudFormationCognitoUserPoolDomain
+      Runtime: nodejs8.10
+      Code: ./CloudFormationCognitoUserPoolDomain.js
+      Handler: CloudFormationCognitoUserPoolDomain.handler
+      Role: !GetAtt LambdaForCloudFormation.Arn
+    DependsOn: CloudFormationSendResponse
+
+Outputs:
+  ClientOutput:
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub "${AWS::StackName}:AppClientId"
+  UserPoolOutput:
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub "${AWS::StackName}:UserPoolId"
+  AuthDomainOutput:
+    Value: !Sub "https://${UserPoolDomainName}.auth.${AWS::Region}.amazoncognito.com"
+    Export:
+      Name: !Sub "${AWS::StackName}:UserPoolDomain"
+  RedirectOutput:
+    Value: !Ref RedirectUrl
+    Export:
+      
