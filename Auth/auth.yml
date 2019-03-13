@@ -7,10 +7,7 @@ Parameters:
   UserPoolDomainName:
     Type: String
     Description: The domain associated to the user pool
-  RedirectUrl:
-    Type: String
-    Description: Redirect and callback URL for auth
-    
+
 Resources:
   UserPool:
     Type: 'AWS::Cognito::UserPool'
@@ -54,8 +51,8 @@ Resources:
         - COGNITO
 #        TODO
 #        - GOOGLE
-      CallbackURL: !Ref RedirectUrl
-      LogoutURL: !Ref RedirectUrl
+      CallbackURL: 'http://localhost:4200'
+      LogoutURL: 'http://localhost:4200'
       AllowedOAuthFlowsUserPoolClient: true
       AllowedOAuthFlows:
         - code
@@ -175,7 +172,3 @@ Outputs:
     Value: !Sub "https://${UserPoolDomainName}.auth.${AWS::Region}.amazoncognito.com"
     Export:
       Name: !Sub "${AWS::StackName}:UserPoolDomain"
-  RedirectOutput:
-    Value: !Ref RedirectUrl
-    Export:
-      
